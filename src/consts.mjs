@@ -17,8 +17,8 @@ export const MONETIZE = {
   // 애드센스 광고 단위 슬롯 ID (선택)
   adSlotInArticle: process.env.PUBLIC_ADSENSE_SLOT_INARTICLE || "",
   adSlotFooter: process.env.PUBLIC_ADSENSE_SLOT_FOOTER || "",
-  // 쿠팡 파트너스 트래킹 ID (예: "AF1234567"). 링크에 ?lptag= 로 부착.
-  coupangTag: process.env.PUBLIC_COUPANG_TAG || "",
+  // 쿠팡 파트너스 트래킹 ID. 링크에 ?lptag= 로 부착. (공개 제휴 태그라 코드에 둬도 무방)
+  coupangTag: process.env.PUBLIC_COUPANG_TAG || "AF1526344",
   // 숙박 제휴 (여기어때/아고다 등) 파트너 파라미터. 없으면 일반 검색 링크.
   lodgingPartner: process.env.PUBLIC_LODGING_PARTNER || "",
 };
