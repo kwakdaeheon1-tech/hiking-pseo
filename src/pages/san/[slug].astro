@@ -3,6 +3,7 @@ import Base from "../../layouts/Base.astro";
 import CourseTable from "../../components/CourseTable.astro";
 import CoupangGear from "../../components/CoupangGear.astro";
 import LodgingBlock from "../../components/LodgingBlock.astro";
+import LocationMap from "../../components/LocationMap.astro";
 import AdSlot from "../../components/AdSlot.astro";
 import mountains from "../../data/mountains.json";
 import { SITE } from "../../consts.mjs";
@@ -90,6 +91,8 @@ const seasonText = {
     </div>
     <div><dt>추천 시기</dt><dd>{m.seasons.length ? m.seasons.join(" · ") : "연중"}</dd></div>
   </dl>
+
+  <LocationMap lat={m.lat} lng={m.lng} name={m.name} />
 
   <div class="notice">
     소요시간·난이도는 <strong>산림청 공개 데이터의 표기</strong>를 그대로 옮긴 것입니다.
