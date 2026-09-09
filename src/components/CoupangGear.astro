@@ -1,5 +1,6 @@
 ---
 import gear from "../data/gear.json";
+import deeplinks from "../data/deeplinks.json";
 import { MONETIZE, COUPANG_DISCLOSURE } from "../consts.mjs";
 
 // mountain 조건으로 노출할 장비 태그 산출
@@ -15,6 +16,9 @@ if (mountain.seasons?.includes("여름")) wants.add("summer");
 const picks = gear.items.filter((it) => it.tags.some((t) => wants.has(t))).slice(0, 8);
 
 function coupangUrl(keyword) {
+  // 딥링크(link.coupang.com)가 생성돼 있으면 그걸 우선 사용 (정식 추적)
+  if (deeplinks[keyword]) return deeplinks[keyword];
+  // 없으면 검색 URL + lptag 파라미터로 폴백
   const base = "https://www.coupang.com/np/search?q=" + encodeURIComponent(keyword);
   return MONETIZE.coupangTag ? `${base}&lptag=${encodeURIComponent(MONETIZE.coupangTag)}` : base;
 }
