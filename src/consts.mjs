@@ -12,8 +12,8 @@ export const SITE = {
 
 // 수익화 슬롯 — 값이 없으면 자리표시자(placeholder)만 렌더된다.
 export const MONETIZE = {
-  // 구글 애드센스: 승인 후 "ca-pub-XXXXXXXXXXXXXXXX"
-  adsenseClient: process.env.PUBLIC_ADSENSE_CLIENT || "",
+  // 구글 애드센스 퍼블리셔 ID (계정: kwakdaeheon1@gmail.com)
+  adsenseClient: process.env.PUBLIC_ADSENSE_CLIENT || "ca-pub-7247491098661239",
   // 애드센스 광고 단위 슬롯 ID (선택)
   adSlotInArticle: process.env.PUBLIC_ADSENSE_SLOT_INARTICLE || "",
   adSlotFooter: process.env.PUBLIC_ADSENSE_SLOT_FOOTER || "",
