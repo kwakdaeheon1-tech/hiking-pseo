@@ -8,6 +8,25 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(fileURLToPath(import.meta.url), "../..");
 const SRC = path.join(ROOT, "data/raw/100대명산_산림청_20250421.csv");
 const OUT = path.join(ROOT, "src/data/mountains.json");
+// 로컬에 원본이 없으면(예: CI 빌드) 공공데이터포털에서 직접 받는다. 이용허락범위 제한 없음.
+const CSV_URL =
+  "https://www.data.go.kr/cmm/cmm/fileDownload.do?atchFileId=FILE_000000003125262&fileDetailSn=1";
+
+async function ensureCsv() {
+  if (fs.existsSync(SRC)) return;
+  console.log("[build-data] 원본 CSV가 없어 공공데이터포털에서 내려받는다...");
+  const res = await fetch(CSV_URL, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+      Referer: "https://www.data.go.kr/data/15112801/fileData.do",
+    },
+  });
+  if (!res.ok) throw new Error(`CSV 다운로드 실패: HTTP ${res.status}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  fs.mkdirSync(path.dirname(SRC), { recursive: true });
+  fs.writeFileSync(SRC, buf);
+  console.log(`[build-data] 내려받음: ${(buf.length / 1024) | 0} KB`);
+}
 
 // --- CSV 파서 (따옴표/개행 포함 필드 대응) ---
 function parseCSV(str) {
@@ -142,6 +161,7 @@ function shortRegion(pofloc) {
 }
 
 // --- 실행 ---
+await ensureCsv();
 const rawCsv = fs.readFileSync(SRC, "utf8").replace(/^﻿/, "");
 const rows = parseCSV(rawCsv);
 const header = rows[0];
