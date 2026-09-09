@@ -1,0 +1,14 @@
+---
+const { courses } = Astro.props;
+---
+<div class="courses">
+  {
+    courses.map((c) => (
+      <div class="course">
+        <span class="tag">{c.구분}</span>
+        <p class="route">{c.구간}</p>
+        {c.소요시간 && <p class="total">총 소요시간: {c.소요시간}</p>}
+      </div>
+    ))
+  }
+</div>

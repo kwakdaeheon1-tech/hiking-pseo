@@ -1,0 +1,42 @@
+---
+import gear from "../data/gear.json";
+import { MONETIZE, COUPANG_DISCLOSURE } from "../consts.mjs";
+
+// mountain 조건으로 노출할 장비 태그 산출
+const { mountain } = Astro.props;
+const wants = new Set(["always"]);
+const featText = (mountain.featureReason || "") + " " + (mountain.hikePointParas || []).join(" ");
+if (/바위|암봉|암릉|릿지|슬랩|쇠줄|밧줄|사다리/.test(featText)) wants.add("rocky");
+if ((mountain.feltScore || 0) >= 4) wants.add("hard");
+if ((mountain.heightM || 0) >= 1000) wants.add("highpeak");
+if (mountain.seasons?.includes("겨울")) wants.add("winter");
+if (mountain.seasons?.includes("여름")) wants.add("summer");
+
+const picks = gear.items.filter((it) => it.tags.some((t) => wants.has(t))).slice(0, 8);
+
+function coupangUrl(keyword) {
+  const base = "https://www.coupang.com/np/search?q=" + encodeURIComponent(keyword);
+  return MONETIZE.coupangTag ? `${base}&lptag=${encodeURIComponent(MONETIZE.coupangTag)}` : base;
+}
+---
+<section class="gear" aria-label="산행 준비물">
+  <h2>{mountain.name} 산행 준비물 · 장비 체크</h2>
+  <p class="lead">
+    {mountain.feltLevel !== "정보 없음" && `체감 난이도 "${mountain.feltLevel}"`}
+    {mountain.seasons?.length ? ` · 추천 시기 ${mountain.seasons.join("·")}` : ""} 기준으로
+    챙기면 좋은 품목입니다. 링크는 쿠팡 검색 결과로 연결됩니다.
+  </p>
+  <div class="gear-grid">
+    {
+      picks.map((it) => (
+        <div class="gear-item">
+          <a href={coupangUrl(it.keyword)} target="_blank" rel="sponsored nofollow noopener">
+            {it.label} ↗
+          </a>
+          <p>{it.note}</p>
+        </div>
+      ))
+    }
+  </div>
+  <p class="disclosure">{COUPANG_DISCLOSURE}</p>
+</section>

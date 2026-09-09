@@ -1,0 +1,199 @@
+---
+import Base from "../../layouts/Base.astro";
+import CourseTable from "../../components/CourseTable.astro";
+import CoupangGear from "../../components/CoupangGear.astro";
+import LodgingBlock from "../../components/LodgingBlock.astro";
+import AdSlot from "../../components/AdSlot.astro";
+import mountains from "../../data/mountains.json";
+import { SITE } from "../../consts.mjs";
+
+export function getStaticPaths() {
+  return mountains.map((m) => ({ params: { slug: m.slug }, props: { m } }));
+}
+
+const { m } = Astro.props;
+const enc = encodeURIComponent(m.slug);
+const path = `/san/${enc}/`;
+
+// 내부 링크: 같은 광역시·도 + 비슷한 난이도
+const sameRegion = mountains
+  .filter((x) => x.slug !== m.slug && x.regionShort.split(" ")[0] === m.regionShort.split(" ")[0])
+  .slice(0, 5);
+const similar = mountains
+  .filter((x) => x.slug !== m.slug && Math.abs((x.feltScore || 0) - (m.feltScore || 0)) <= 1)
+  .filter((x) => !sameRegion.includes(x))
+  .slice(0, 5);
+
+const title = `${m.name} 등산코스 완벽 가이드 — 소요시간·난이도·교통`;
+const desc = `${m.name}(${m.regionShort}, ${m.heightM ?? "?"}m) 등산코스 ${m.courses.length}개 정리. ${
+  m.feltLevel !== "정보 없음" ? "체감 난이도 " + m.feltLevel + ", " : ""
+}${m.seasons.length ? "추천 시기 " + m.seasons.join("·") + ", " : ""}교통·주차와 산행 포인트까지.`;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      headline: `${m.name} 등산코스 완벽 가이드`,
+      description: desc,
+      about: m.name,
+      inLanguage: "ko",
+      isAccessibleForFree: true,
+      author: { "@type": "Organization", name: SITE.name },
+      publisher: { "@type": "Organization", name: SITE.name },
+      mainEntityOfPage: new URL(path, SITE.url).href,
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "홈", item: SITE.url },
+        { "@type": "ListItem", position: 2, name: "100대명산", item: new URL("/san/", SITE.url).href },
+        { "@type": "ListItem", position: 3, name: m.name, item: new URL(path, SITE.url).href },
+      ],
+    },
+    m.lat && m.lng
+      ? {
+          "@type": "Mountain",
+          name: m.name,
+          elevation: m.heightM ? `${m.heightM} m` : undefined,
+          geo: { "@type": "GeoCoordinates", latitude: m.lat, longitude: m.lng },
+        }
+      : null,
+  ].filter(Boolean),
+};
+
+const seasonText = {
+  봄: "4~5월 진달래·철쭉과 신록",
+  여름: "6~8월 계곡과 짙은 녹음 (더위·소나기 대비)",
+  가을: "10월 중순~11월 초 단풍·억새",
+  겨울: "12~2월 설경·상고대 (아이젠 필수, 일몰 빠름)",
+};
+---
+
+<Base title={title} description={desc} path={path} jsonLd={jsonLd}>
+  <p class="crumbs">
+    <a href="/">홈</a> › <a href="/san/">100대명산</a> › {m.name}
+  </p>
+
+  <h1>{m.name} 등산코스 완벽 가이드</h1>
+  <p class="lead">
+    {m.regionShort}에 있는 해발 {m.heightM ?? "?"}m의 산. 산림청 100대명산 공개 데이터를
+    바탕으로 대표 코스와 소요시간, 접근 교통, 계절 포인트를 한 페이지에 정리했습니다.
+  </p>
+
+  <dl class="facts">
+    <div><dt>높이</dt><dd>{m.heightM ? `${m.heightM} m` : "정보 없음"}</dd></div>
+    <div><dt>소재지</dt><dd>{m.regionShort}</dd></div>
+    <div>
+      <dt>체감 난이도</dt>
+      <dd>{m.feltLevel}{m.timeBand ? ` · ${m.timeBand}` : ""}</dd>
+    </div>
+    <div><dt>추천 시기</dt><dd>{m.seasons.length ? m.seasons.join(" · ") : "연중"}</dd></div>
+  </dl>
+
+  <div class="notice">
+    소요시간·난이도는 <strong>산림청 공개 데이터의 표기</strong>를 그대로 옮긴 것입니다.
+    개인 체력, 적설·결빙, 탐방로 통제에 따라 실제 소요시간은 크게 달라질 수 있습니다.
+    산행 전 <strong>국립공원공단·지자체 공지와 기상 예보</strong>를 확인하고, 일몰 2시간
+    전에는 하산을 시작하세요.
+  </div>
+
+  {m.featureReason && (
+    <>
+      <h2>{m.name}은 어떤 산인가</h2>
+      <p>{m.featureReason}</p>
+    </>
+  )}
+
+  <AdSlot place="inarticle" />
+
+  {m.summaryParas.length > 0 && (
+    <>
+      <h2>산 소개</h2>
+      {m.summaryParas.map((p) => <p>{p}</p>)}
+    </>
+  )}
+
+  <h2>{m.name} 등산코스 ({m.courses.length}개)</h2>
+  <p class="lead">
+    각 코스의 <strong>구간별 이동 시간</strong>과 <strong>총 소요시간</strong>입니다.
+    괄호로 표시된 지점은 대피소·갈림길 등 경유지입니다.
+  </p>
+  <CourseTable courses={m.courses} />
+
+  {m.hikePointParas.length > 0 && (
+    <>
+      <h2>산행 포인트 — 놓치면 아쉬운 곳</h2>
+      {m.hikePointParas.map((p) => <p>{p}</p>)}
+    </>
+  )}
+
+  <CoupangGear mountain={m} />
+
+  <AdSlot place="inarticle" />
+
+  {m.transitParas.length > 0 && (
+    <>
+      <h2>{m.name} 가는 길 — 교통·주차</h2>
+      {m.transitParas.map((p) => <p>{p}</p>)}
+    </>
+  )}
+
+  <LodgingBlock mountain={m} />
+
+  <h2>{m.name} 계절별 추천 시기</h2>
+  {m.seasons.length > 0 ? (
+    <ul>
+      {m.seasons.map((s) => <li><strong>{s}</strong> — {seasonText[s] ?? s}</li>)}
+    </ul>
+  ) : (
+    <p>
+      뚜렷한 성수기 표기는 없습니다. 일반적으로 봄(신록·철쭉)과 가을(단풍)이 가장 걷기
+      좋고, 여름은 계곡 코스, 겨울은 아이젠을 갖추면 설경 산행이 가능합니다.
+    </p>
+  )}
+
+  {(sameRegion.length > 0 || similar.length > 0) && (
+    <>
+      <h2>함께 보면 좋은 산</h2>
+      {sameRegion.length > 0 && (
+        <>
+          <h3>{m.regionShort.split(" ")[0]}의 다른 명산</h3>
+          <ul class="mtn-list">
+            {sameRegion.map((x) => (
+              <li>
+                <a href={`/san/${encodeURIComponent(x.slug)}/`}>
+                  <span>{x.name} 등산코스</span>
+                  <span class="meta">{x.regionShort} · {x.heightM ?? "?"}m</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {similar.length > 0 && (
+        <>
+          <h3>비슷한 난이도의 산</h3>
+          <ul class="mtn-list">
+            {similar.map((x) => (
+              <li>
+                <a href={`/san/${encodeURIComponent(x.slug)}/`}>
+                  <span>{x.name} 등산코스</span>
+                  <span class="meta">{x.feltLevel} · {x.heightM ?? "?"}m</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
+  )}
+
+  <p class="src">
+    출처: {m.source.name} · 공공데이터포털 <a href={m.source.url} rel="nofollow">15112801</a>
+    ({m.source.license}). 이 페이지는 원본 데이터를 재구성·요약한 것으로, 최신 현장 정보와
+    다를 수 있습니다.
+  </p>
+
+  <AdSlot place="footer" />
+</Base>

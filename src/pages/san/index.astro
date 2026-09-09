@@ -1,0 +1,40 @@
+---
+import Base from "../../layouts/Base.astro";
+import mountains from "../../data/mountains.json";
+
+const sorted = [...mountains].sort((a, b) => a.name.localeCompare(b.name, "ko"));
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "한국 100대명산 목록",
+  numberOfItems: sorted.length,
+  itemListElement: sorted.map((m, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: m.name,
+    url: new URL(`/san/${encodeURIComponent(m.slug)}/`, Astro.site).href,
+  })),
+};
+---
+
+<Base
+  title="한국 100대명산 전체 목록 (가나다순)"
+  description="산림청 선정 100대명산 전체를 가나다순으로 정리한 목록. 산 이름을 누르면 등산코스·소요시간·난이도·교통 정보를 볼 수 있습니다."
+  path="/san/"
+  jsonLd={jsonLd}
+>
+  <p class="crumbs"><a href="/">홈</a> › 100대명산</p>
+  <h1>한국 100대명산 전체 목록</h1>
+  <p class="lead">가나다순 {sorted.length}개. 산 이름을 누르면 상세 등산코스 가이드로 이동합니다.</p>
+
+  <ul class="mtn-list">
+    {sorted.map((m) => (
+      <li>
+        <a href={`/san/${encodeURIComponent(m.slug)}/`}>
+          <span>{m.name} 등산코스</span>
+          <span class="meta">{m.regionShort} · {m.heightM ?? "?"}m · {m.feltLevel}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</Base>

@@ -1,0 +1,36 @@
+---
+import { MONETIZE } from "../consts.mjs";
+const { mountain } = Astro.props;
+const region = mountain.regionShort || mountain.region?.split(",")[0] || "";
+const q = encodeURIComponent(region + " 숙소");
+
+// 파트너 파라미터가 있으면 부착, 없으면 일반 검색 링크
+const partner = MONETIZE.lodgingPartner;
+const yeogiUrl = `https://www.yeogi.com/domestic-accommodations?keyword=${q}${partner ? "&" + partner : ""}`;
+const agodaUrl = `https://www.agoda.com/ko-kr/search?city=&text=${q}${partner ? "&" + partner : ""}`;
+---
+{
+  region && (
+    <section class="gear" aria-label="근처 숙박">
+      <h2>{mountain.name} 근처 숙소 (새벽 산행·원거리 접근용)</h2>
+      <p class="lead">
+        {region} 일대 숙소입니다. 무박·장거리로 접근하는 산은 전날 인근에서 1박 하면
+        들머리 도착 시간을 앞당길 수 있습니다.
+      </p>
+      <div class="gear-grid">
+        <div class="gear-item">
+          <a href={yeogiUrl} target="_blank" rel="sponsored nofollow noopener">
+            여기어때에서 {region} 숙소 보기 ↗
+          </a>
+          <p>모텔·펜션·호텔 위주. 당일 예약 가능 매물이 많습니다.</p>
+        </div>
+        <div class="gear-item">
+          <a href={agodaUrl} target="_blank" rel="sponsored nofollow noopener">
+            아고다에서 {region} 숙소 보기 ↗
+          </a>
+          <p>호텔·리조트 위주. 지방 관광지 연계 숙박에 적합합니다.</p>
+        </div>
+      </div>
+    </section>
+  )
+}

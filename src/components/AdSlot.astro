@@ -1,0 +1,28 @@
+---
+import { MONETIZE } from "../consts.mjs";
+// 위치: "inarticle" | "footer"
+const { place = "inarticle" } = Astro.props;
+const client = MONETIZE.adsenseClient;
+const slot = place === "footer" ? MONETIZE.adSlotFooter : MONETIZE.adSlotInArticle;
+const live = Boolean(client && slot);
+---
+{
+  live ? (
+    <div class="ad-slot live" aria-label="광고">
+      <ins
+        class="adsbygoogle"
+        style="display:block"
+        data-ad-client={client}
+        data-ad-slot={slot}
+        data-ad-format={place === "footer" ? "auto" : "fluid"}
+        data-ad-layout={place === "inarticle" ? "in-article" : undefined}
+        data-full-width-responsive="true"
+      />
+      <script is:inline>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+  ) : (
+    <div class="ad-slot" aria-hidden="true">광고 자리 ({place}) · 애드센스 승인 후 노출</div>
+  )
+}

@@ -1,0 +1,71 @@
+---
+import "../styles/global.css";
+import { SITE, MONETIZE } from "../consts.mjs";
+
+const {
+  title,
+  description = SITE.description,
+  path = "",
+  jsonLd = null,
+  noindex = false,
+} = Astro.props;
+
+const canonical = new URL(path, SITE.url).href;
+const fullTitle = title ? `${title} | ${SITE.name}` : SITE.title;
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={SITE.locale} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
+    {
+      MONETIZE.adsenseClient && (
+        <script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${MONETIZE.adsenseClient}`}
+          crossorigin="anonymous"
+        />
+      )
+    }
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a href="/">⛰ {SITE.name}</a>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>
+          <a href="/">홈</a> · <a href="/about/">사이트 소개</a> ·
+          <a href="/privacy/">개인정보처리방침</a>
+        </p>
+        <p>
+          등산코스·소요시간·난이도 정보의 출처는 산림청 국립자연휴양림관리소(숲나들e)
+          100대명산 공개 데이터입니다. 현장 상황(기상·통제·공사)에 따라 실제와 다를 수
+          있으니 산행 전 국립공원공단·해당 지자체의 최신 공지를 반드시 확인하세요.
+        </p>
+        <p>© {new Date().getFullYear()} {SITE.name}</p>
+      </div>
+    </footer>
+  </body>
+</html>
