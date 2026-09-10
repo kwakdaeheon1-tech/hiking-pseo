@@ -5,7 +5,7 @@ export function GET() {
   const urls = [
     "/",
     "/san/",
-    "/about/",
+    "/about/", "/faq/", "/guide/",
     ...mountains.map((m) => `/san/${encodeURIComponent(m.slug)}/`),
   ];
   const today = new Date().toISOString().slice(0, 10);
